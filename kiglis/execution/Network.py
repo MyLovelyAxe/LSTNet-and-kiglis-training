@@ -17,7 +17,7 @@ class Network(nn.Module):
         ###### CNN ######
         self.cnn = nn.Sequential(
             nn.Conv2d(in_channels=1,out_channels=self.CNNhid,kernel_size=(self.kernel,self.m)),
-            nn.LeakyReLU(),
+            nn.Tanh(),
             nn.Dropout(self.drop_ratio)
         )
         
@@ -27,7 +27,7 @@ class Network(nn.Module):
         ###### output ######
         self.output = nn.Sequential(
             nn.Linear(self.RNNhid,self.m),
-            nn.Sigmoid()
+            # nn.Sigmoid()
         )
         
     def forward(self,x):

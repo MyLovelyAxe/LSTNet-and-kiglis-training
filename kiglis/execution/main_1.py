@@ -2,10 +2,18 @@ import torch
 import numpy as np
 import torch.optim as optim
 import torch.nn as nn
+import matplotlib.pyplot as plt
 from KiglisLoader import KiglisLoader
 from Network import Network
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.optim.lr_scheduler import StepLR
+
+# the effect is unacceptable, the probable reason:
+# last layer of network was sigmoid, then output will be always positive
+# but targets are all negative, so loss will remain even though overfitting
+# now change last layer as tanh
+# effect is still not good
+# try to normalize target into (0,1)
 
 def get_loaders():
     norm=0
@@ -26,13 +34,16 @@ if __name__ == "__main__":
     # all buffs are useless for improvment
     # adam can faster achieve loss=1.55 than sgd, which is reasonable
     optimizer = optim.Adam(model.parameters(), lr=0.01, weight_decay=0.01)
-    # scheduler = StepLR(optimizer,step_size=2,gamma=0.1)
+    scheduler = StepLR(optimizer,step_size=2,gamma=0.1)
     criterion = nn.L1Loss().to(device)
 
     model.train()
     for epoch in range(10):
 
         for batch_idx,(data,target) in enumerate(train_loader):
+            # normalize target into (0,1)
+            # torch.min() and torch.max() return a tensor for value and a tensor for index
+            # target = (target-torch.min(target,axis=0)[0])/(torch.max(target,axis=0)[0]-torch.min(target,axis=0)[0])
             data, target = data.to(device), target.cuda()
             out = model(data)
             loss = criterion(out,target)
@@ -49,6 +60,7 @@ if __name__ == "__main__":
         
         test_loss = 0
         for data, target in val_loader:
+            # target = (target-torch.min(target,axis=0)[0])/(torch.max(target,axis=0)[0]-torch.min(target,axis=0)[0])
             data, target = data.to(device), target.cuda()
             out = model(data)
             test_loss += criterion(out, target).item()
@@ -56,7 +68,7 @@ if __name__ == "__main__":
         test_loss /= len(val_loader.dataset)
         print('\nVAL set: Average loss: {:.4f}\n'.format(test_loss))
 
-        # scheduler.step()
+        scheduler.step()
 
     model.eval()
     RSE_numerator = 0
@@ -65,6 +77,7 @@ if __name__ == "__main__":
     # RSE = sqrt(sum((pred_i-tarrget_i)**2)) / RSE_denominator
     # RSE_denominator = sqrt(sum((target_i-mean(target_all))**2))
     for data, target in test_loader:
+        # target = (target-torch.min(target,axis=0)[0])/(torch.max(target,axis=0)[0]-torch.min(target,axis=0)[0])
         all_target = torch.cat((target,all_target),axis=0)
         data, target = data.to(device), target.cuda()
         out = model(data)
@@ -84,3 +97,17 @@ if __name__ == "__main__":
     CORR_loss = torch.sum(CORR_numerator / CORR_denominator)/(all_target.shape[1])
     print('\nTEST set: RSE = {:.4f}\n'.format(RSE_loss))
     print('\nTEST set: CORR = {:.4f}\n'.format(CORR_loss))
+
+    # [32728,30] -> [30,32728]
+    all_out = all_out.t()
+    all_out = np.array(all_out.detach())
+    all_target = all_target.t()
+    all_target = np.array(all_target.detach())
+
+    x = np.linspace(0,100,100)
+    plt.plot(x,all_out[0][0:100],linewidth=0.4,label="output")
+    plt.plot(x,all_target[0][0:100],linewidth=0.4,label="target")
+    plt.xlabel("x_axis")
+    plt.ylabel("out and target")
+    plt.legend()
+    plt.show()
