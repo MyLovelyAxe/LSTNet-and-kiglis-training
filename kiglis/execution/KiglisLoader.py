@@ -130,7 +130,7 @@ class KiglisLoader():
 
 if __name__ == "__main__":
     norm=2
-    x_path = '/home/hardli/python/Fraunhofer KIT/Interview/kiglis/x_data.txt'
-    y_path = '/home/hardli/python/Fraunhofer KIT/Interview/kiglis/y_data.txt'
+    x_path = '/home/hardli/python/KIT AIFB HIWI/Interview/kiglis/x_data.txt'
+    y_path = '/home/hardli/python/KIT AIFB HIWI/Interview/kiglis/y_data.txt'
     kiglis_loader_creator = KiglisLoader(x_path, y_path, norm)
     train_loader, val_loader, test_loader, y_data = kiglis_loader_creator.create()

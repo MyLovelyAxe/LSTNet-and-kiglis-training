@@ -17,8 +17,8 @@ from torch.optim.lr_scheduler import StepLR
 
 def get_loaders():
     norm=0
-    x_path = '/home/hardli/python/Fraunhofer KIT/Interview/kiglis/x_data.txt'
-    y_path = '/home/hardli/python/Fraunhofer KIT/Interview/kiglis/y_data.txt'
+    x_path = '/home/hardli/python/KIT AIFB HIWI/Interview/kiglis/x_data.txt'
+    y_path = '/home/hardli/python/KIT AIFB HIWI/Interview/kiglis/y_data.txt'
     kiglis_loader_creator = KiglisLoader(x_path, y_path, norm)
     # train_loader, val_loader, test_loader = kiglis_loader_creator.create()
     return kiglis_loader_creator.create()
